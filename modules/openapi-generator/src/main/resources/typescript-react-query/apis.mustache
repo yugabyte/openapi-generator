@@ -50,8 +50,20 @@ export const {{nickname}}AxiosRequest = (
       url: '{{{path}}}'{{#pathParams}}.replace(`{${'{{baseName}}'}}`, encodeURIComponent(String(requestParameters.{{paramName}}))){{/pathParams}},
       method: '{{httpMethod}}',
       {{#allParams.0}}
-      params: requestParameters
+      params: requestParameters,
       {{/allParams.0}}
+      // YB: Modify default Axios query parameter serialization
+      paramsSerializer: function paramsSerializer(params) {
+        return Object.keys(params).map((key) => {
+          if (params[key] == undefined) {
+            return null;
+          }          
+          if (Array.isArray(params[key])) {
+            return `${key}=${params[key].map(encodeURIComponent).join(',')}`;
+          }
+          return `${key}=${encodeURIComponent(params[key])}`;
+        }).filter(Boolean).join('&');
+      }
     },
     customAxiosInstance
   );
